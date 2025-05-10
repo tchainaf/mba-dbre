@@ -1,0 +1,27 @@
+@startuml
+title Data Pipeline
+footer Disponível em https://github.com/tchainaf/mba-dbre
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_LANDSCAPE()
+
+Person(user, "Usuário")
+
+System_Boundary(oltp, "Online Transaction Processing") {
+    Container(frontend, "Frontend", "Angular", "Web App de interação")
+    Container(api, "API", "Java")
+    ContainerDb(db, "Database API", "Oracle")
+}
+
+System_Boundary(olap, "Online Analytical Processing") {
+    Container(job, "Ingestão de Dados")
+    ContainerDb(dw, "Data Warehouse", "BigQuery/Snowflake/Redshift/Exadata")
+
+    Rel(job, dw, "Salvar dados da origem")
+}
+
+Rel_Up(user, frontend, "Realizar pedidos")
+Rel(frontend, api, "Consumir endpoints")
+Rel(api, db, "Persistir dados")
+Rel(db, job, "Carregar dados da origem")
+@enduml
