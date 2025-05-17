@@ -1,4 +1,4 @@
-@startuml
+@startuml diagram
 title Data Pipeline
 footer Disponível em https://github.com/tchainaf/mba-dbre
 
