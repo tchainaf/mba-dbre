@@ -6,6 +6,7 @@ footer Disponível em https://github.com/tchainaf/mba-dbre
 LAYOUT_LANDSCAPE()
 
 Person(user, "Usuário")
+Person(user_business, "Usuário de Negócios")
 
 System_Boundary(oltp, "Online Transaction Processing") {
     Container(frontend, "Frontend", "Angular", "Web App de interação")
@@ -13,15 +14,46 @@ System_Boundary(oltp, "Online Transaction Processing") {
     ContainerDb(db, "Database API", "Oracle")
 }
 
-System_Boundary(olap, "Online Analytical Processing") {
-    Container(job, "Ingestão de Dados")
-    ContainerDb(dw, "Data Warehouse", "BigQuery/Snowflake/Redshift/Exadata")
-
-    Rel(job, dw, "Salvar dados da origem")
+System_Boundary(data_sources, "Fontes de Dados Externas") {
+    Container(ibge, "API IBGE")
+    ContainerDb(correio, "Geo", "csv")
+    ContainerDb(erp, "ERP", "db2", "SAP/Protheus")
+    ContainerQueue(iot, "Sensores", "Armazém de Distribuição")
+    Container(scraping, "Web Scraping")
+    Container(pdf, "PDFs")
 }
 
-Rel_Up(user, frontend, "Realizar pedidos")
+System_Boundary(olap, "Online Analytical Processing") {
+    Container(extraction, "Ingestão de Dados")
+    ContainerDb(object_storage, "S3/Blob/GCS/Minio", "Object Storage")
+    ContainerDb(dw, "Data Warehouse", "BigQuery/Snowflake/Redshift/Exadata")
+    Container(transformation, "Transformação de Dados")
+
+    Rel(extraction, dw, "Salvar dados da origem")
+    Rel(extraction, object_storage, "Salvar arquivos")
+    Rel(dw, transformation, "Transformar dados")
+    Rel(object_storage, transformation, "Transformar dados")
+}
+
+System_Boundary(analytics, "Analytics") {
+    Container(dataviz, "PowerBI/Tableau", "Data Viz")
+    Container(ml, "Machine Learning", "Predições/Segmentações")
+}
+
+Rel(user, frontend, "Realizar pedidos")
+Rel(user_business, dataviz, "Obter insights")
+
 Rel(frontend, api, "Consumir endpoints")
 Rel(api, db, "Persistir dados")
-Rel(db, job, "Carregar dados da origem")
+Rel(db, extraction, "Carregar dados da origem")
+
+Rel(ibge, extraction, "Carregar dados da origem")
+Rel(correio, extraction, "Carregar dados da origem")
+Rel(erp, extraction, "Carregar dados da origem")
+Rel(iot, extraction, "Carregar dados da origem")
+Rel(scraping, extraction, "Carregar dados da origem")
+Rel(pdf, extraction, "Carregar dados da origem")
+
+Rel(dw, dataviz, "Alimentar dashboards e insights")
+BiRel(dw, ml, "Treinar modelos de machine learning")
 @enduml
