@@ -40,5 +40,9 @@ terraform.rc
 .terragrunt-cache
 
 testing/
-
 aws/
+.minio.sys/
+venv/
+target/
+dbt_packages/
+logs/
